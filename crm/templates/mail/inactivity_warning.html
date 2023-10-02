@@ -1,0 +1,15 @@
+{% extends "mail_templated/base.tpl" %}
+
+{% load absolute_url %}
+
+{% block subject %}
+⚠️ Your money is flowing away!
+{% endblock %}
+
+{% block body %}
+Hello, you didnt show up for any lessons for the past week!
+
+The subscription has a limited lifetime - usually 6 weeks from the date of the first lesson.
+
+A subscription does not work like a gym membership, you have to work out!
+{% endblock %}

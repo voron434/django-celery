@@ -1,10 +1,12 @@
 from collections import OrderedDict
+from datetime import datetime, timedelta
 
 import requests
 from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Exists, OuterRef
 from django.shortcuts import resolve_url
 from django_countries.fields import CountryField
 from image_cropping import ImageRatioField
@@ -13,6 +15,7 @@ from timezone_field import TimeZoneField
 
 from crm.signals import trial_lesson_added
 from elk.logging import logger
+from market.models import Class, Subscription
 
 
 class Company(models.Model):
@@ -33,9 +36,39 @@ class CustomerSource(models.Model):
         return self.name
 
 
-class CustomerManager(models.Manager):
+class CustomerQuerySet(models.QuerySet):
     def get_queryset(self):
         return super().get_queryset().select_related('user')
+
+    def with_subscriptions(self):
+        return self.annotate( 
+            is_subscribed=Exists( 
+                Subscription.objects.filter( 
+                    customer=OuterRef('id'), 
+                    is_fully_used=False,
+                )
+            )
+        ).filter(
+            is_subscribed=True
+        )
+
+    def had_classes_in_past(self, days_ago=None):
+        now = datetime.now()
+        date_days_ago = now - timedelta(days=days_ago)
+        if days_ago:
+            classes_qs = Class.objects.select_related('timeline').filter(timeline__end__gte=date_days_ago, timeline__is_finished=True)
+        else:
+            classes_qs = Class.objects.select_related('timeline').filter(timeline__is_finished=True)
+        return self.annotate( 
+            had_classes_in_past=Exists( 
+                Class.objects.filter(
+                    customer=OuterRef('id'),
+                    timeline__end__range=(date_days_ago, now)
+                )
+            )
+        ).filter(
+            had_classes_in_past=True
+        )
 
 
 class Customer(models.Model):
@@ -100,6 +133,10 @@ class Customer(models.Model):
     twitter = models.CharField('Twitter username', max_length=140, blank=True)
     instagram = models.CharField('Instagram username', max_length=140, blank=True)
     linkedin = models.CharField('Linkedin username', max_length=140, blank=True)
+
+    got_inactivity_warning = models.BooleanField('Получил предупреждение о неактивности', default=False, blank=True)
+
+    objects = CustomerQuerySet.as_manager()
 
     def get_absolute_url(self):
         return resolve_url('admin:crm_customer_change', self.pk)
