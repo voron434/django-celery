@@ -123,6 +123,8 @@ class Entry(models.Model):
     instance.`allow_overlap` property to True if you want to enable overlap
     protection.
 
+    FIXME: its strange that "allow_overlap=True" enables overlap protection, other words, disables overlapping
+
     You can check overlapping with the `instance.is_overlapping()` method. Checks will be
     done automaticaly, when save() is invoced and allow_overlap == False
 

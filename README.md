@@ -8,7 +8,7 @@ Configuration is stored in `elk/.env`, for examples see `elk/.env.circle`, used 
 
 ## Installing on a local machine
 
-This project requires python3 (i don't test it on python2). For frontend building you need to install Node.JS. I run tests on OS X and Linux (Circle CI), so the project should work on both systems.
+This project requires python3.7 <!-- TODO: use poetry/docker to avoid versioning errors, doesn't work with versions above 3.7 --> (i don't test it on python2). For frontend building you need to install Node.JS. I run tests on OS X and Linux (Circle CI), so the project should work on both systems.
 
 ```sh
 pip install -r requirements.txt
@@ -19,6 +19,13 @@ bower install
 cp elk/.env.circle elk/.env
 ./manage.py loaddata crm lessons products teachers
 ```
+
+<!-- FIXME: download_geoip_db.sh not working anymore, cz website returns 404 -->
+
+<!-- FIXME: Probably we should add this to the script above, need to check if issue reproduced on other stuff members envs-->
+In case of errors while installing libs with pip, see:
+- [Error in anyjson setup command: use_2to3 is invalid](https://stackoverflow.com/questions/72414481/error-in-anyjson-setup-command-use-2to3-is-invalid)
+- [libxml install error using pip](https://stackoverflow.com/questions/5178416/libxml-install-error-using-pip)
 
 For always-actual bootstrap process please consider CI configuration.
 
