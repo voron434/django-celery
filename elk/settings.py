@@ -321,6 +321,10 @@ CELERYBEAT_SCHEDULE = {
         'task': 'accounting.tasks.bill_timeline_entries',
         'schedule': timedelta(minutes=1),
     },
+    'check_student_inactivity': {
+        'task': 'market.tasks.send_inactivity_warnings',
+        'schedule': timedelta(days=1),
+    },
 }
 
 
